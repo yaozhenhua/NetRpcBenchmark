@@ -20,6 +20,8 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.Core" Version="1.11.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0-preview2-final" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.1.0-preview2-final" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta006" />
     <PackageReference Include="System.ServiceModel.NetTcp" Version="4.5.0-preview2-26410-01" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.5.0-preview2-26410-01" />
@@ -27,6 +29,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NetRpcPerfApi\NetRpcPerfApi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

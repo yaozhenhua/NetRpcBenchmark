@@ -6,9 +6,11 @@ namespace NetRpcPerfClient
 {
     using System;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Extensions.Configuration;
 
     /// <summary>
     /// RPC Perf Client
@@ -24,13 +26,27 @@ namespace NetRpcPerfClient
 
         private static void Main(string[] args)
         {
-            RunWcf("localhost", 12345, 100, 20, 50).GetAwaiter().GetResult();
-            RunProto("localhost", 12356, 100, 20, 50).GetAwaiter().GetResult();
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json");
+            var config = builder.Build();
+            var wcfHost = config["WcfServerAddress"];
+            var wcfPort = int.Parse(config["WcfServerPort"]);
+            var protoHost = config["GrpcProtoServerAddress"];
+            var protoPort = int.Parse(config["GrpcProtoServerPort"]);
+            var maxTaskCount = int.Parse(config["MaxTaskCount"]);
+            var channelCount = int.Parse(config["ChannelCount"]);
+            var warmupSeconds = int.Parse(config["WarmupSeconds"]);
+            var measureSeconds = int.Parse(config["MeasureSeconds"]);
+
+            RunWcf(wcfHost, wcfPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
+            RunProto(protoHost, protoPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
         }
 
         private static async Task RunWcf(
             string remoteAddress,
             int remotePort,
+            int maxTaskCount,
             int channelCount,
             int warmupSeconds,
             int measureSeconds)
@@ -49,6 +65,7 @@ namespace NetRpcPerfClient
             await PerfBenchmark(
                 clients,
                 client => client.EchoAsync("haha"),
+                maxTaskCount,
                 warmupSeconds,
                 measureSeconds)
                 .ConfigureAwait(false);
@@ -59,6 +76,7 @@ namespace NetRpcPerfClient
         private static async Task RunProto(
             string remoteAddress,
             int remotePort,
+            int maxTaskCount,
             int channelCount,
             int warmupSeconds,
             int measureSeconds)
@@ -75,6 +93,7 @@ namespace NetRpcPerfClient
                 {
                     await client.EchoAsync(inputMsg);
                 },
+                maxTaskCount,
                 warmupSeconds,
                 measureSeconds)
                 .ConfigureAwait(false);
@@ -85,13 +104,13 @@ namespace NetRpcPerfClient
         private static async Task PerfBenchmark<T>(
             T[] clients,
             Func<T, Task> doSomething,
+            int maxTaskCount,
             int warmupSeconds,
             int measureSeconds)
         {
             var stage = ExecutionStage.WarmUp;
             var count = 0;
             var taskCount = 0;
-            var maxTaskCount = 128;
             var clock = Stopwatch.StartNew();
             var minTicks = long.MaxValue;
             var maxTicks = long.MinValue;

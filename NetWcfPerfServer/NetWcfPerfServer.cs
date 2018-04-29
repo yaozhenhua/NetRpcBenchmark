@@ -32,7 +32,7 @@ namespace NetWcfPerf
                 smb.HttpGetEnabled = true;
                 smb.HttpGetUrl = new Uri($"http://localhost:{port + 1}");
                 smb.MetadataExporter.PolicyVersion = PolicyVersion.Policy15;
-                host.Description.Behaviors.Add(smb);
+                ////host.Description.Behaviors.Add(smb);
 
                 host.Open();
                 Console.WriteLine($"WCF Echo Service running at {baseAddress}. Press <Enter> to stop");
