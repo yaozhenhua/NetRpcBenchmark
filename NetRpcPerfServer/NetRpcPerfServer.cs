@@ -1,10 +1,17 @@
-﻿using System;
+﻿// <copyright file="NetRpcPerfServer.cs" company="Zhenhua Yao">
+// Copyright (c) Zhenhua Yao. All rights reserved.
+// </copyright>
 
 namespace NetRpcPerfServer
 {
-    class Program
+    using System;
+
+    /// <summary>
+    /// RPC perf server
+    /// </summary>
+    internal sealed class NetRpcPerfServer
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
         }
