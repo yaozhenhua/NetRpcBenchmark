@@ -1,0 +1,13 @@
+// Copyright (C) 2018 Zhenhua Yao. All rights reserved.
+
+namespace EchoBond;
+
+struct EchoMessage
+{
+    0: wstring Text;
+}
+
+service Echo
+{
+    EchoMessage Echo(EchoMessage);
+}

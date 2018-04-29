@@ -34,6 +34,8 @@ namespace NetRpcPerfClient
             var wcfPort = int.Parse(config["WcfServerPort"]);
             var protoHost = config["GrpcProtoServerAddress"];
             var protoPort = int.Parse(config["GrpcProtoServerPort"]);
+            var bondHost = config["GrpcBondServerAddress"];
+            var bondPort = int.Parse(config["GrpcBondServerPort"]);
             var maxTaskCount = int.Parse(config["MaxTaskCount"]);
             var channelCount = int.Parse(config["ChannelCount"]);
             var warmupSeconds = int.Parse(config["WarmupSeconds"]);
@@ -41,6 +43,7 @@ namespace NetRpcPerfClient
 
             RunWcf(wcfHost, wcfPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
             RunProto(protoHost, protoPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
+            RunBond(protoHost, protoPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
         }
 
         private static async Task RunWcf(
@@ -81,12 +84,40 @@ namespace NetRpcPerfClient
             int warmupSeconds,
             int measureSeconds)
         {
-            Console.WriteLine($"Establishing {channelCount} channels");
+            Console.WriteLine($"Establishing {channelCount} proto/gRPC channels");
             var channels = Enumerable.Range(0, channelCount)
                 .Select(x => new Grpc.Core.Channel(remoteAddress, remotePort, Grpc.Core.ChannelCredentials.Insecure))
                 .ToArray();
             var clients = channels.Select(x => new EchoProto.Echo.EchoClient(x)).ToArray();
             var inputMsg = new EchoProto.Message { Text = "haha" };
+            await PerfBenchmark(
+                clients,
+                async (client) =>
+                {
+                    await client.EchoAsync(inputMsg);
+                },
+                maxTaskCount,
+                warmupSeconds,
+                measureSeconds)
+                .ConfigureAwait(false);
+
+            await Task.WhenAll(channels.Select(c => c.ShutdownAsync()));
+        }
+
+        private static async Task RunBond(
+            string remoteAddress,
+            int remotePort,
+            int maxTaskCount,
+            int channelCount,
+            int warmupSeconds,
+            int measureSeconds)
+        {
+            Console.WriteLine($"Establishing {channelCount} bond/gRPC channels");
+            var channels = Enumerable.Range(0, channelCount)
+                .Select(x => new Grpc.Core.Channel(remoteAddress, remotePort, Grpc.Core.ChannelCredentials.Insecure))
+                .ToArray();
+            var clients = channels.Select(x => new EchoBond.Echo.EchoClient(x)).ToArray();
+            var inputMsg = new EchoBond.EchoMessage { Text = "haha" };
             await PerfBenchmark(
                 clients,
                 async (client) =>
