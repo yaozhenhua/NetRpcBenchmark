@@ -24,17 +24,20 @@ namespace NetRpcPerfClient
 
         private static void Main(string[] args)
         {
-            RunWcf(100, 20, 50).GetAwaiter().GetResult();
+            RunWcf("localhost", 12345, 100, 20, 50).GetAwaiter().GetResult();
+            RunProto("localhost", 12356, 100, 20, 50).GetAwaiter().GetResult();
         }
 
         private static async Task RunWcf(
+            string remoteAddress,
+            int remotePort,
             int channelCount,
             int warmupSeconds,
             int measureSeconds)
         {
-            Console.WriteLine($"Establishing {channelCount} channels");
+            Console.WriteLine($"Establishing {channelCount} WCF channels");
             var clients = Enumerable.Range(0, channelCount)
-                .Select(x => new NetWcfPerf.WcfEchoClient("net.tcp://localhost:12345"))
+                .Select(x => new NetWcfPerf.WcfEchoClient($"net.tcp://{remoteAddress}:{remotePort}"))
                 .ToArray();
 
             // A sanity check
@@ -51,6 +54,32 @@ namespace NetRpcPerfClient
                 .ConfigureAwait(false);
 
             Parallel.ForEach(clients, c => c.Close());
+        }
+
+        private static async Task RunProto(
+            string remoteAddress,
+            int remotePort,
+            int channelCount,
+            int warmupSeconds,
+            int measureSeconds)
+        {
+            Console.WriteLine($"Establishing {channelCount} channels");
+            var channels = Enumerable.Range(0, channelCount)
+                .Select(x => new Grpc.Core.Channel(remoteAddress, remotePort, Grpc.Core.ChannelCredentials.Insecure))
+                .ToArray();
+            var clients = channels.Select(x => new EchoProto.Echo.EchoClient(x)).ToArray();
+            var inputMsg = new EchoProto.Message { Text = "haha" };
+            await PerfBenchmark(
+                clients,
+                async (client) =>
+                {
+                    await client.EchoAsync(inputMsg);
+                },
+                warmupSeconds,
+                measureSeconds)
+                .ConfigureAwait(false);
+
+            await Task.WhenAll(channels.Select(c => c.ShutdownAsync()));
         }
 
         private static async Task PerfBenchmark<T>(

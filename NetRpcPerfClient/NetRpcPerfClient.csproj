@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.Core" Version="1.11.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta006" />
     <PackageReference Include="System.ServiceModel.NetTcp" Version="4.5.0-preview2-26410-01" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.5.0-preview2-26410-01" />

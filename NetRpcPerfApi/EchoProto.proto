@@ -1,0 +1,13 @@
+// Copyright (C) 2018 Zhenhua Yao.
+
+syntax = "proto3";
+
+package EchoProto;
+
+service Echo {
+    rpc Echo (Message) returns (Message) {}
+}
+
+message Message {
+    string Text = 1;
+}
