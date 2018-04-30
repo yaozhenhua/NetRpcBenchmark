@@ -199,6 +199,9 @@ namespace NetRpcPerfClient
             stage = ExecutionStage.Stopping;
             clock.Stop();
 
+            Console.WriteLine("Waiting for all tasks to be completed...");
+            SpinWait.SpinUntil(() => taskCount == 0);
+
             var rate = count / clock.Elapsed.TotalSeconds;
             var minDuration = (double)minTicks / TimeSpan.TicksPerMillisecond;
             var maxDuration = (double)maxTicks / TimeSpan.TicksPerMillisecond;
