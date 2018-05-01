@@ -36,6 +36,8 @@ namespace NetRpcPerfClient
             var protoPort = int.Parse(config["GrpcProtoServerPort"]);
             var bondHost = config["GrpcBondServerAddress"];
             var bondPort = int.Parse(config["GrpcBondServerPort"]);
+            var goHost = config["GrpcProtoGoServerAddress"];
+            var goPort = int.Parse(config["GrpcProtoGoServerPort"]);
             var maxTaskCount = int.Parse(config["MaxTaskCount"]);
             var channelCount = int.Parse(config["ChannelCount"]);
             var warmupSeconds = int.Parse(config["WarmupSeconds"]);
@@ -44,6 +46,7 @@ namespace NetRpcPerfClient
             RunWcf(wcfHost, wcfPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
             RunProto(protoHost, protoPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
             RunBond(protoHost, protoPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
+            RunProto(goHost, goPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
         }
 
         private static async Task RunWcf(
