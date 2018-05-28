@@ -17,6 +17,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetRpcPerfApi", "NetRpcPerf
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetWcfPerfServer", "NetWcfPerfServer\NetWcfPerfServer.csproj", "{A6FE1B41-A64D-4465-8F86-C5E5EA1396A9}"
 EndProject
+Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "NetCoreSfApp", "NetCoreSfApp\NetCoreSfApp.sfproj", "{B909DF7A-CA4A-4AD5-99CC-88601F242AC4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyValueStore", "KeyValueStore\KeyValueStore.csproj", "{92F86C1C-ADFB-4C96-AA88-D69A756C80ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -39,6 +43,16 @@ Global
 		{A6FE1B41-A64D-4465-8F86-C5E5EA1396A9}.Debug|x64.Build.0 = Debug|x64
 		{A6FE1B41-A64D-4465-8F86-C5E5EA1396A9}.Release|x64.ActiveCfg = Release|x64
 		{A6FE1B41-A64D-4465-8F86-C5E5EA1396A9}.Release|x64.Build.0 = Release|x64
+		{B909DF7A-CA4A-4AD5-99CC-88601F242AC4}.Debug|x64.ActiveCfg = Debug|x64
+		{B909DF7A-CA4A-4AD5-99CC-88601F242AC4}.Debug|x64.Build.0 = Debug|x64
+		{B909DF7A-CA4A-4AD5-99CC-88601F242AC4}.Debug|x64.Deploy.0 = Debug|x64
+		{B909DF7A-CA4A-4AD5-99CC-88601F242AC4}.Release|x64.ActiveCfg = Release|x64
+		{B909DF7A-CA4A-4AD5-99CC-88601F242AC4}.Release|x64.Build.0 = Release|x64
+		{B909DF7A-CA4A-4AD5-99CC-88601F242AC4}.Release|x64.Deploy.0 = Release|x64
+		{92F86C1C-ADFB-4C96-AA88-D69A756C80ED}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{92F86C1C-ADFB-4C96-AA88-D69A756C80ED}.Debug|x64.Build.0 = Debug|Any CPU
+		{92F86C1C-ADFB-4C96-AA88-D69A756C80ED}.Release|x64.ActiveCfg = Release|Any CPU
+		{92F86C1C-ADFB-4C96-AA88-D69A756C80ED}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
