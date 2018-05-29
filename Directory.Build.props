@@ -10,5 +10,15 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <OutputRoot>$(EnlistmentRoot)\out</OutputRoot>
     <OutputPath>$(OutputRoot)\$(Configuration)-$(Platform)\$(MSBuildProjectName)</OutputPath>
+
+    <BUILD_BUILDNUMBER Condition="'$(BUILD_BUILDNUMBER)' == ''">$([System.DateTime]::UtcNow.ToString("yyyyMMdd")).0</BUILD_BUILDNUMBER>
+    <AssemblyVersion>1.1</AssemblyVersion>
+    <FileVersion>$(AssemblyVersion).$(BUILD_BUILDNUMBER)</FileVersion>
+
+    <_gitorghead>$(EnlistmentRoot)\.git\ORIG_HEAD</_gitorghead>
+    <_CommitHash Condition="Exists($(_gitorghead))">$([System.IO.File]::ReadAllText("$(_gitorghead)"))</_CommitHash>
+    <VersionCommitHash Condition="'$(VersionCommitHash)'==''">$(_CommitHash.Substring(0,7))</VersionCommitHash>
+
+    <InformationalVersion>$(FileVersion)-$(VersionCommitHash)</InformationalVersion>
   </PropertyGroup>
 </Project>
