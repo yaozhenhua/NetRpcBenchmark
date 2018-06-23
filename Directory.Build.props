@@ -17,6 +17,7 @@
 
     <_gitorghead>$(EnlistmentRoot)\.git\ORIG_HEAD</_gitorghead>
     <_CommitHash Condition="Exists($(_gitorghead))">$([System.IO.File]::ReadAllText("$(_gitorghead)"))</_CommitHash>
+    <_CommitHash Condition="'$(_CommitHash)' == ''">1234567</_CommitHash>
     <VersionCommitHash Condition="'$(VersionCommitHash)'==''">$(_CommitHash.Substring(0,7))</VersionCommitHash>
 
     <InformationalVersion>$(FileVersion)-$(VersionCommitHash)</InformationalVersion>
