@@ -22,6 +22,8 @@ class DotNetPerf
         TcpPingPongPerf();
         TcpPingPongPerfAsync().GetAwaiter().GetResult();
         TcpServerQpsAsync(100);
+        LibUvPingPongAsync("LibUvPingPong", 1).GetAwaiter().GetResult();
+        LibUvPingPongAsync("LibUvThroughput", 100).GetAwaiter().GetResult();
     }
 
     static async Task SocketNetworkStreamPerf()
@@ -461,6 +463,43 @@ class DotNetPerf
         {
             Parallel.ForEach(clientStreams, s => s?.Dispose());
             Parallel.ForEach(clients, c => c?.Dispose());
+        }
+    }
+
+    static async Task LibUvPingPongAsync(string testCaseName, int clientCount)
+    {
+        var port = 12345;
+        using (var uvServer = new UvServer(port))
+        {
+            var serverTask = Task.Run(() => uvServer.Run());
+            var sw = new Stopwatch();
+
+            var clients = Enumerable.Range(0, clientCount).Select(_ => new UvClient(port)).ToArray();
+            var clientTasks = clients.Select(c => Task.Run(() => c.Run())).ToArray();
+
+            SpinWait.SpinUntil(() => uvServer.ConnectCount >= clientCount);
+
+            log($"All clients are connected, warming up for 30 seconds and runnning for 30 seconds.");
+            Thread.Sleep(30_000);
+
+            int gen0 = GC.CollectionCount(0), gen1 = GC.CollectionCount(1), gen2 = GC.CollectionCount(2);
+            uvServer.ReceiveCount = 0;
+            sw.Start();
+
+            Thread.Sleep(30_000);
+
+            sw.Stop();
+            var totalCount = uvServer.ReceiveCount;
+
+            uvServer.Close();
+            Parallel.ForEach(clients, client => client.Close());
+
+            await serverTask;
+            await Task.WhenAll(clientTasks);
+
+            var rate = totalCount / sw.Elapsed.TotalSeconds;
+            log($"{testCaseName} ClientCount={clientCount} Server receive count = {totalCount} in {sw.Elapsed} QPS={rate}");
+            log($"  Gen0={GC.CollectionCount(0) - gen0} Gen1={GC.CollectionCount(1) - gen1} Gen2={GC.CollectionCount(2) - gen2}");
         }
     }
 }
