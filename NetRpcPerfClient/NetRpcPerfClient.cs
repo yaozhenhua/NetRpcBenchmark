@@ -8,6 +8,7 @@ namespace NetRpcPerfClient
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
@@ -30,6 +31,9 @@ namespace NetRpcPerfClient
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json");
             var config = builder.Build();
+
+            var aspNetHost = config["AspNetServerAddress"];
+            var aspNetPort = int.Parse(config["AspNetServerPort"]);
             var wcfHost = config["WcfServerAddress"];
             var wcfPort = int.Parse(config["WcfServerPort"]);
             var protoHost = config["GrpcProtoServerAddress"];
@@ -43,6 +47,7 @@ namespace NetRpcPerfClient
             var warmupSeconds = int.Parse(config["WarmupSeconds"]);
             var measureSeconds = int.Parse(config["MeasureSeconds"]);
 
+            RunAspNet(aspNetHost, aspNetPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
             RunWcf(wcfHost, wcfPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
             RunProto(protoHost, protoPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
             RunBond(protoHost, protoPort, maxTaskCount, channelCount, warmupSeconds, measureSeconds).GetAwaiter().GetResult();
@@ -133,6 +138,44 @@ namespace NetRpcPerfClient
                 .ConfigureAwait(false);
 
             await Task.WhenAll(channels.Select(c => c.ShutdownAsync()));
+        }
+
+        private static async Task RunAspNet(
+            string remoteAddress,
+            int remotePort,
+            int maxTaskCount,
+            int channelCount,
+            int warmupSeconds,
+            int measureSeconds)
+        {
+            Console.WriteLine($"Establishing {channelCount} ASP.NET Core channels");
+            var url = $"http://{remoteAddress}:{remotePort}/echo/haha";
+            var httpClients = Enumerable.Range(0, channelCount)
+                .Select(x => new HttpClient())
+                .ToArray();
+
+            try
+            {
+                await PerfBenchmark(
+                    httpClients,
+                    async (client) =>
+                    {
+                        var response = await client.GetAsync(url);
+                        response.EnsureSuccessStatusCode();
+                        await response.Content.ReadAsStringAsync();
+                    },
+                    maxTaskCount,
+                    warmupSeconds,
+                    measureSeconds)
+                    .ConfigureAwait(false);
+            }
+            finally
+            {
+                foreach (var client in httpClients)
+                {
+                    client.Dispose();
+                }
+            }
         }
 
         private static async Task PerfBenchmark<T>(
